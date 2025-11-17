@@ -1,0 +1,354 @@
+<!-- resources/views/karyawan/import.blade.php -->
+@extends('layouts.app')
+
+@section('title', 'Import Data Karyawan')
+@section('page-title', 'Import Data Karyawan dari Excel')
+
+@section('content')
+<style>
+    .import-card {
+        border: 2px dashed #667eea;
+        background: #f8f9ff;
+        transition: all 0.3s;
+    }
+    
+    .import-card:hover {
+        border-color: #764ba2;
+        background: #f0f2ff;
+    }
+    
+    .drop-zone {
+        min-height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+    
+    .instruction-card {
+        background: #fff;
+        border-left: 4px solid #667eea;
+    }
+    
+    .step-badge {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+</style>
+
+<div class="row">
+    <!-- Left Column - Upload Form -->
+    <div class="col-md-6">
+        <div class="card import-card">
+            <div class="card-body p-4">
+                <h5 class="card-title mb-4">
+                    <i class="bi bi-cloud-upload me-2"></i>Upload File Excel
+                </h5>
+                
+                <form action="{{ route('karyawan.import') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    
+                    <div class="drop-zone mb-4" onclick="document.getElementById('fileInput').click()">
+                        <div class="text-center">
+                            <i class="bi bi-file-earmark-excel text-success fs-1 mb-3"></i>
+                            <h5>Klik atau Drop File Excel</h5>
+                            <p class="text-muted mb-2">Format: .xlsx, .xls, .csv</p>
+                            <p class="text-muted small">Maximum size: 5MB</p>
+                            <input type="file" 
+                                   id="fileInput" 
+                                   name="file" 
+                                   class="d-none" 
+                                   accept=".xlsx,.xls,.csv"
+                                   required
+                                   onchange="updateFileName(this)">
+                            <div id="fileName" class="mt-3 text-primary fw-bold"></div>
+                        </div>
+                    </div>
+
+                    @error('file')
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>{{ $message }}
+                    </div>
+                    @enderror
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-upload me-2"></i>Import Data
+                        </button>
+                        <a href="{{ route('karyawan.index') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Kembali
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Download Buttons -->
+        <div class="mt-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="mb-3"><i class="bi bi-download me-2"></i>Download</h6>
+                    <div class="d-grid gap-2">
+                        <a href="{{ route('karyawan.template') }}" class="btn btn-success btn-sm">
+                            <i class="bi bi-file-earmark-excel me-2"></i>Download Template Excel
+                        </a>
+                        <a href="{{ route('karyawan.export') }}" class="btn btn-info btn-sm">
+                            <i class="bi bi-file-earmark-arrow-down me-2"></i>Export Data Existing
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column - Instructions -->
+    <div class="col-md-6">
+        <!-- Instructions -->
+        <div class="card instruction-card mb-3">
+            <div class="card-body">
+                <h5 class="card-title mb-4">
+                    <i class="bi bi-info-circle me-2"></i>Panduan Import
+                </h5>
+
+                <div class="d-flex mb-3">
+                    <div class="step-badge me-3">1</div>
+                    <div>
+                        <h6 class="mb-1">Download Template</h6>
+                        <p class="text-muted small mb-0">
+                            Download template Excel yang sudah disediakan. Template sudah berisi contoh data dan format yang benar.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="d-flex mb-3">
+                    <div class="step-badge me-3">2</div>
+                    <div>
+                        <h6 class="mb-1">Isi Data</h6>
+                        <p class="text-muted small mb-0">
+                            Isi data karyawan sesuai format. Baris pertama adalah header, jangan dihapus! Mulai isi data dari baris kedua.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="d-flex mb-3">
+                    <div class="step-badge me-3">3</div>
+                    <div>
+                        <h6 class="mb-1">Upload File</h6>
+                        <p class="text-muted small mb-0">
+                            Upload file Excel yang sudah diisi. Sistem akan otomatis validasi dan import data.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="d-flex">
+                    <div class="step-badge me-3">4</div>
+                    <div>
+                        <h6 class="mb-1">Selesai</h6>
+                        <p class="text-muted small mb-0">
+                            Data berhasil diimport! Anda akan melihat hasil import dan laporan error jika ada.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Important Notes -->
+        <div class="card border-warning">
+            <div class="card-body">
+                <h6 class="text-warning mb-3">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Penting!
+                </h6>
+                <ul class="small mb-0">
+                    <li class="mb-2"><strong>NIK</strong> harus 16 digit angka</li>
+                    <li class="mb-2"><strong>NIP, NIK, Email</strong> harus unik (tidak boleh duplikat)</li>
+                    <li class="mb-2"><strong>Jenis Kelamin</strong> harus "Laki-laki" atau "Perempuan" (persis seperti ini)</li>
+                    <li class="mb-2"><strong>Tahun Lulus</strong> harus 4 digit (contoh: 2020)</li>
+                    <li class="mb-2"><strong>Email</strong> harus format email yang valid</li>
+                    <li class="mb-2">Semua field wajib diisi kecuali <strong>Nama dengan Gelar</strong></li>
+                    <li class="mb-0">Header (baris pertama) tidak boleh diubah</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Format Columns -->
+        <div class="card mt-3">
+            <div class="card-body">
+                <h6 class="mb-3">
+                    <i class="bi bi-table me-2"></i>Format Kolom Excel
+                </h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Kolom</th>
+                                <th>Contoh</th>
+                            </tr>
+                        </thead>
+                        <tbody class="small">
+                            <tr>
+                                <td><code>nip</code></td>
+                                <td>123456789</td>
+                            </tr>
+                            <tr>
+                                <td><code>nik</code></td>
+                                <td>3201234567890001</td>
+                            </tr>
+                            <tr>
+                                <td><code>nama_lengkap</code></td>
+                                <td>Dr. Budi Santoso</td>
+                            </tr>
+                            <tr>
+                                <td><code>nama_gelar</code></td>
+                                <td>Dr. Budi Santoso, Sp.PD</td>
+                            </tr>
+                            <tr>
+                                <td><code>jenis_kelamin</code></td>
+                                <td>Laki-laki / Perempuan</td>
+                            </tr>
+                            <tr>
+                                <td><code>no_hp</code></td>
+                                <td>081234567890</td>
+                            </tr>
+                            <tr>
+                                <td><code>email</code></td>
+                                <td>budi@rs.com</td>
+                            </tr>
+                            <tr>
+                                <td><code>alamat</code></td>
+                                <td>Jl. Kesehatan No. 123</td>
+                            </tr>
+                            <tr>
+                                <td><code>pendidikan_terakhir</code></td>
+                                <td>S1 / S2 / D3 / SMA</td>
+                            </tr>
+                            <tr>
+                                <td><code>tahun_lulus</code></td>
+                                <td>2020</td>
+                            </tr>
+                            <tr>
+                                <td><code>jabatan</code></td>
+                                <td>Dokter Spesialis</td>
+                            </tr>
+                            <tr>
+                                <td><code>unit</code></td>
+                                <td>Poliklinik Umum</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Error Display (if any from previous import) -->
+@if(session('import_errors'))
+<div class="card border-danger mt-4">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-exclamation-circle me-2"></i>Detail Error Import
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-warning">
+            <i class="bi bi-info-circle me-2"></i>
+            Berikut adalah daftar error yang terjadi saat import. Perbaiki data dan upload ulang.
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Baris</th>
+                        <th>Field</th>
+                        <th>Error</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(session('import_errors') as $error)
+                    <tr>
+                        <td>{{ $error['row'] ?? '-' }}</td>
+                        <td>{{ $error['attribute'] ?? '-' }}</td>
+                        <td>
+                            @if(isset($error['errors']))
+                                {{ implode(', ', $error['errors']) }}
+                            @else
+                                {{ $error['error'] ?? json_encode($error) }}
+                            @endif
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+@endif
+
+@endsection
+
+@push('scripts')
+<script>
+function updateFileName(input) {
+    const fileName = input.files[0]?.name;
+    const fileNameDisplay = document.getElementById('fileName');
+    
+    if (fileName) {
+        fileNameDisplay.innerHTML = `
+            <i class="bi bi-file-earmark-check me-2"></i>
+            ${fileName}
+        `;
+    }
+}
+
+// Drag & Drop functionality
+const dropZone = document.querySelector('.drop-zone');
+const fileInput = document.getElementById('fileInput');
+
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, preventDefaults, false);
+});
+
+function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+['dragenter', 'dragover'].forEach(eventName => {
+    dropZone.addEventListener(eventName, highlight, false);
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, unhighlight, false);
+});
+
+function highlight(e) {
+    dropZone.style.borderColor = '#764ba2';
+    dropZone.style.background = '#e8f0fe';
+}
+
+function unhighlight(e) {
+    dropZone.style.borderColor = '#667eea';
+    dropZone.style.background = '#f8f9ff';
+}
+
+dropZone.addEventListener('drop', handleDrop, false);
+
+function handleDrop(e) {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    
+    if (files.length) {
+        fileInput.files = files;
+        updateFileName(fileInput);
+    }
+}
+</script>
+@endpush
