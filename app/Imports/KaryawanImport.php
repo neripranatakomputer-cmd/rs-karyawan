@@ -1,5 +1,4 @@
 <?php
-// app/Imports/KaryawanImport.php
 
 namespace App\Imports;
 
@@ -10,7 +9,10 @@ use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use Maatwebsite\Excel\Concerns\SkipsOnError;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
+use Maatwebsite\Excel\Concerns\WithBatchInserts;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Validators\Failure;
+use Illuminate\Support\Facades\Log;
 
 class KaryawanImport implements 
     ToModel, 
@@ -18,7 +20,9 @@ class KaryawanImport implements
     WithValidation,
     SkipsEmptyRows,
     SkipsOnError,
-    SkipsOnFailure
+    SkipsOnFailure,
+    WithBatchInserts,
+    WithChunkReading
 {
     protected $errors = [];
     protected $successCount = 0;
@@ -26,29 +30,45 @@ class KaryawanImport implements
 
     public function model(array $row)
     {
+        // Debug: Log row data
+        Log::info('Processing row:', $row);
+
+        // Skip jika row kosong
+        if (empty($row['nip']) && empty($row['nama_lengkap'])) {
+            return null;
+        }
+
         try {
             $this->successCount++;
             
             return new Karyawan([
-                'nip'                  => $row['nip'],
-                'nik'                  => $row['nik'],
-                'nama_lengkap'         => $row['nama_lengkap'],
-                'nama_gelar'           => $row['nama_gelar'] ?? null,
-                'jenis_kelamin'        => $row['jenis_kelamin'],
-                'no_hp'                => $row['no_hp'],
-                'email'                => $row['email'],
-                'alamat'               => $row['alamat'],
-                'pendidikan_terakhir'  => $row['pendidikan_terakhir'],
-                'tahun_lulus'          => $row['tahun_lulus'],
-                'jabatan'              => $row['jabatan'],
-                'unit'                 => $row['unit'],
+                'nip'                  => trim($row['nip'] ?? ''),
+                'nik'                  => trim($row['nik'] ?? ''),
+                'nama_lengkap'         => trim($row['nama_lengkap'] ?? ''),
+                'nama_gelar'           => trim($row['nama_gelar'] ?? '') ?: null,
+                'jenis_kelamin'        => trim($row['jenis_kelamin'] ?? ''),
+                'no_hp'                => trim($row['no_hp'] ?? ''),
+                'email'                => trim($row['email'] ?? ''),
+                'alamat'               => trim($row['alamat'] ?? ''),
+                'pendidikan_terakhir'  => trim($row['pendidikan_terakhir'] ?? ''),
+                'tahun_lulus'          => trim($row['tahun_lulus'] ?? ''),
+                'jabatan'              => trim($row['jabatan'] ?? ''),
+                'unit'                 => trim($row['unit'] ?? ''),
             ]);
         } catch (\Exception $e) {
             $this->errorCount++;
             $this->errors[] = [
                 'row' => $this->successCount + $this->errorCount,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'data' => $row
             ];
+            
+            // Log error
+            Log::error('Import error:', [
+                'row' => $row,
+                'error' => $e->getMessage()
+            ]);
+            
             return null;
         }
     }
@@ -78,15 +98,25 @@ class KaryawanImport implements
             'nik.required' => 'NIK wajib diisi',
             'nik.digits' => 'NIK harus 16 digit',
             'nik.unique' => 'NIK sudah terdaftar',
+            'email.required' => 'Email wajib diisi',
+            'email.email' => 'Format email tidak valid',
             'email.unique' => 'Email sudah terdaftar',
             'jenis_kelamin.in' => 'Jenis kelamin harus Laki-laki atau Perempuan',
+            'tahun_lulus.digits' => 'Tahun lulus harus 4 digit',
         ];
     }
 
     public function onError(\Throwable $e)
     {
         $this->errorCount++;
-        $this->errors[] = $e->getMessage();
+        $this->errors[] = [
+            'error' => $e->getMessage()
+        ];
+        
+        Log::error('Import general error:', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
     }
 
     public function onFailure(Failure ...$failures)
@@ -99,7 +129,23 @@ class KaryawanImport implements
                 'errors' => $failure->errors(),
                 'values' => $failure->values()
             ];
+            
+            Log::warning('Import validation failure:', [
+                'row' => $failure->row(),
+                'attribute' => $failure->attribute(),
+                'errors' => $failure->errors()
+            ]);
         }
+    }
+
+    public function batchSize(): int
+    {
+        return 100; // Process 100 rows at a time
+    }
+
+    public function chunkSize(): int
+    {
+        return 100; // Read 100 rows at a time
     }
 
     public function getErrors()

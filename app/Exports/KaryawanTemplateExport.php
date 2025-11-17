@@ -1,6 +1,4 @@
 <?php
-// app/Exports/KaryawanTemplateExport.php
-// Generate dengan: php artisan make:export KaryawanTemplateExport
 
 namespace App\Exports;
 
@@ -8,27 +6,34 @@ use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
-class KaryawanTemplateExport implements FromArray, WithHeadings, WithStyles, WithColumnWidths
+class KaryawanTemplateExport implements 
+    FromArray, 
+    WithHeadings, 
+    WithStyles, 
+    WithColumnWidths,
+    ShouldAutoSize
 {
     public function array(): array
     {
-        // Template dengan contoh data
+        // Return 3 rows contoh data
         return [
             [
-                '123456789',                    // NIP
-                '3201234567890001',            // NIK (16 digit)
-                'Dr. Budi Santoso',            // Nama Lengkap
-                'Dr. Budi Santoso, Sp.PD',     // Nama dengan Gelar (opsional)
-                'Laki-laki',                   // Jenis Kelamin
-                '081234567890',                // No HP
-                'budi.santoso@rs.com',         // Email
-                'Jl. Kesehatan No. 123, Jakarta', // Alamat
-                'S2',                          // Pendidikan Terakhir
-                '2020',                        // Tahun Lulus (4 digit)
-                'Dokter Spesialis Penyakit Dalam', // Jabatan
-                'Poliklinik Penyakit Dalam',   // Unit
+                '123456789',                    // nip
+                '3201234567890001',            // nik
+                'Dr. Budi Santoso',            // nama_lengkap
+                'Dr. Budi Santoso, Sp.PD',     // nama_gelar
+                'Laki-laki',                   // jenis_kelamin
+                '081234567890',                // no_hp
+                'budi.santoso@rs.com',         // email
+                'Jl. Kesehatan No. 123, Jakarta', // alamat
+                'S2',                          // pendidikan_terakhir
+                '2020',                        // tahun_lulus
+                'Dokter Spesialis Penyakit Dalam', // jabatan
+                'Poliklinik Penyakit Dalam',   // unit
             ],
             [
                 '987654321',
@@ -43,6 +48,20 @@ class KaryawanTemplateExport implements FromArray, WithHeadings, WithStyles, Wit
                 '2019',
                 'Perawat',
                 'Ruang IGD',
+            ],
+            [
+                '111222333',
+                '3201234567890003',
+                'Ahmad Fauzi',
+                '',  // nama_gelar kosong (opsional)
+                'Laki-laki',
+                '081234567892',
+                'ahmad.fauzi@rs.com',
+                'Jl. Anggrek No. 78, Jakarta',
+                'D3',
+                '2021',
+                'Teknisi Lab',
+                'Laboratorium',
             ],
         ];
     }
@@ -68,30 +87,59 @@ class KaryawanTemplateExport implements FromArray, WithHeadings, WithStyles, Wit
     public function styles(Worksheet $sheet)
     {
         return [
+            // Style header row
             1 => [
-                'font' => ['bold' => true, 'size' => 12, 'color' => ['rgb' => 'FFFFFF']],
-                'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '667eea']],
+                'font' => [
+                    'bold' => true, 
+                    'size' => 12, 
+                    'color' => ['rgb' => 'FFFFFF']
+                ],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => '667eea']
+                ],
+                'alignment' => [
+                    'horizontal' => 'center',
+                    'vertical' => 'center',
+                ],
             ],
-            2 => ['fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => 'E8F5E9']]],
-            3 => ['fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => 'E3F2FD']]],
+            // Style example rows
+            2 => [
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'E8F5E9']
+                ]
+            ],
+            3 => [
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'E3F2FD']
+                ]
+            ],
+            4 => [
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'FFF3E0']
+                ]
+            ],
         ];
     }
 
     public function columnWidths(): array
     {
         return [
-            'A' => 15, // NIP
-            'B' => 18, // NIK
-            'C' => 25, // Nama Lengkap
-            'D' => 30, // Nama Gelar
-            'E' => 15, // Jenis Kelamin
-            'F' => 15, // No HP
-            'G' => 25, // Email
-            'H' => 35, // Alamat
-            'I' => 20, // Pendidikan
-            'J' => 12, // Tahun Lulus
-            'K' => 25, // Jabatan
-            'L' => 25, // Unit
+            'A' => 15, // nip
+            'B' => 18, // nik
+            'C' => 25, // nama_lengkap
+            'D' => 30, // nama_gelar
+            'E' => 15, // jenis_kelamin
+            'F' => 15, // no_hp
+            'G' => 25, // email
+            'H' => 35, // alamat
+            'I' => 20, // pendidikan_terakhir
+            'J' => 12, // tahun_lulus
+            'K' => 25, // jabatan
+            'L' => 25, // unit
         ];
     }
 }

@@ -14,7 +14,7 @@ return new class extends Migration
             
             // Data Pribadi
             $table->string('foto_profil')->nullable();
-            $table->string('nip')->unique();
+            $table->string('nip', 18)->unique();
             $table->string('nik', 16)->unique();
             $table->string('nama_lengkap');
             $table->string('nama_gelar')->nullable();
