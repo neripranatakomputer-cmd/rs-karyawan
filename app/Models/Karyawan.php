@@ -21,4 +21,42 @@ class Karyawan extends Model
     {
         return $this->hasMany(CustomFieldValue::class);
     }
+
+    public function attendances()
+{
+    return $this->hasMany(Attendance::class);
+}
+
+// Get total hadir bulan ini
+public function getTotalHadirBulanIni()
+{
+    return $this->attendances()
+        ->whereMonth('tanggal', now()->month)
+        ->whereYear('tanggal', now()->year)
+        ->where('status', 'hadir')
+        ->count();
+}
+
+// Get rekap absensi
+public function getRekapAbsensi($month = null, $year = null)
+{
+    $month = $month ?? now()->month;
+    $year = $year ?? now()->year;
+    
+    $attendances = $this->attendances()
+        ->whereMonth('tanggal', $month)
+        ->whereYear('tanggal', $year)
+        ->get();
+    
+    return [
+        'hadir' => $attendances->where('status', 'hadir')->count(),
+        'izin' => $attendances->where('status', 'izin')->count(),
+        'sakit' => $attendances->where('status', 'sakit')->count(),
+        'cuti' => $attendances->where('status', 'cuti')->count(),
+        'alpa' => $attendances->where('status', 'alpa')->count(),
+        'wfh' => $attendances->where('status', 'wfh')->count(),
+        'total' => $attendances->count(),
+    ];
+}
+
 }

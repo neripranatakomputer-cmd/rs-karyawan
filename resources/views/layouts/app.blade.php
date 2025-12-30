@@ -48,21 +48,31 @@
                         <h5 class="text-white mt-2">RS Management</h5>
                     </div>
                     <ul class="nav flex-column px-2">
-                        <li class="nav-item mb-2">
-                            <a class="nav-link {{ Request::is('karyawan*') ? 'active' : '' }}" href="{{ route('karyawan.index') }}">
-                                <i class="bi bi-people-fill me-2"></i> Data Karyawan
-                            </a>
-                        </li>
-                        <li class="nav-item mb-2">
-                            <a class="nav-link {{ Request::is('custom-fields*') ? 'active' : '' }}" href="{{ route('custom-fields.index') }}">
-                                <i class="bi bi-ui-checks me-2"></i> Custom Fields
-                            </a>
-                        </li>
+
                         <li class="nav-item mb-2">
                             <a class="nav-link" href="{{ route('landing') }}">
                                 <i class="bi bi-house-fill me-2"></i> Beranda
                             </a>
                         </li>
+
+                        <li class="nav-item mb-2">
+                            <a class="nav-link {{ Request::is('karyawan*') ? 'active' : '' }}" href="{{ route('karyawan.index') }}">
+                                <i class="bi bi-people-fill me-2"></i> Data Karyawan
+                            </a>
+                        </li>
+
+                        <li class="nav-item mb-2">
+                            <a class="nav-link {{ Request::is('custom-fields*') ? 'active' : '' }}" href="{{ route('custom-fields.index') }}">
+                                <i class="bi bi-ui-checks me-2"></i> Custom Fields
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item mb-2">
+                            <a class="nav-link {{ Request::is('attendance*') ? 'active' : '' }}" href="{{ route('attendance.index') }}">
+                                <i class="bi bi-calendar-check me-2"></i> Absensi
+                            </a>
+                        </li>
+
                     </ul>
                 </div>
             </nav>
