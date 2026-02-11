@@ -117,7 +117,7 @@
         <h1 class="display-4 fw-bold mb-3 hero-title">RS Umum Daerah Kamang Baru</h1>
 
         <!-- Subtitle -->
-        <p class="lead mb-4 hero-subtitle" style="font-size: 1.4rem;">Rumah Sakit Modern & Terintegrasi</p>
+        <p class="lead mb-4 hero-subtitle" style="font-size: 1.4rem;">Rumah Sakit dengan Pelayanan <b>SMART (Senyum, Manusiawi, Aman , Ramah, dan Tepat)</b></p>
         
         <!-- Call to Action Buttons -->
         <div class="d-flex gap-3 justify-content-center flex-wrap hero-buttons">
@@ -171,7 +171,7 @@
     
     <div class="row g-4">
         @forelse($recentKaryawan as $karyawan)
-        <div class="col-md-4">
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
             <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body text-center p-4">
                     @if($karyawan->foto_profil)
