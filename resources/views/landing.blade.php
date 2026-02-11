@@ -8,7 +8,7 @@
     /* Hero Section dengan Background Image */
     .hero-section-with-image {
         background: linear-gradient(135deg, rgba(102, 126, 234, 0.70) 0%, rgba(118, 75, 162, 0.70) 100%),
-                    url('/images/hospital-hero.jpg');
+                    url('{{ asset('images/hospital-hero.jpg') }}');
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
@@ -109,7 +109,7 @@
     <div class="container text-center">
         <!-- Logo RS -->
         <div class="hospital-badge">
-            <img src="/images/logo-rs.png" alt="Logo Rumah Sakit">
+            <img src="{{ asset('images/logo-rs.png') }}" alt="Logo Rumah Sakit">
         </div>
         
         <!-- Title -->
